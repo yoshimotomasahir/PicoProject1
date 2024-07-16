@@ -62,10 +62,17 @@ int main() {
 	int x1 = 15;
 	int x2 = 32;
 
+	// 共通部分の設定表示
+	setCursorPosition(x1 + 6, 0); std::cout << getRange(range);
+	setCursorPosition(x1, 3); std::cout << space_pad(11) << sampleCount;
+	setCursorPosition(x1, 4); std::cout << space_pad(11) << 1e9 / timeInterval / 1e6;
+	setCursorPosition(x1, 5); std::cout << space_pad(11) << timeInterval / 1000.0;
+
 	// トリガー
 	// delay: 波形取得開始位置 [%]
 	// auto_trigger_ms: 自動トリガー [ms]
 	ps2000_set_trigger(handle, PS2000_CHANNEL_A, mV2adc(-20, range), PS2000_FALLING, -20, 1000);
+
 
 	// データ取得のループ
 	while (true) {
@@ -107,16 +114,12 @@ int main() {
 
 		// 表示を更新
 		int j = 0;
-		setCursorPosition(x1 + 6, 0); std::cout << getRange(range);
 		j = maxIndex;
 		setCursorPosition(x2, 1); std::cout << space_pad(11) << times[j] / 1000.0;
 		setCursorPosition(x1, 1); std::cout << space_pad(11) << adc2mV(bufferA[j], range);
 		j = minIndex;
 		setCursorPosition(x2, 2); std::cout << space_pad(11) << times[j] / 1000.0;
 		setCursorPosition(x1, 2); std::cout << space_pad(11) << adc2mV(bufferA[j], range);
-		setCursorPosition(x1, 3); std::cout << space_pad(11) << sampleCount;
-		setCursorPosition(x1, 4); std::cout << space_pad(11) << 1e9 / timeInterval / 1e6;
-		setCursorPosition(x1, 5); std::cout << space_pad(11) << timeInterval / 1000.0;
 		double timeRange = (times[sampleCount - 1] - times[0]); // ns
 		setCursorPosition(x1, 6); std::cout << space_pad(11) << times[0] / 1000.0;
 		setCursorPosition(x1, 7); std::cout << space_pad(11) << times[sampleCount - 1] / 1000.0;
