@@ -1,7 +1,10 @@
 ﻿#include <iostream>
 #include <thread>
 #include <chrono>
+#include <iomanip>
 #include "ps2000.h"
+
+#define space_pad(num) std::setfill(' ') << std::right << std::setw(num)
 
 const double channelInputRanges[] = { 10., 20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 20000., 50000., 100000., 200000. };
 double adc2mV(int16_t adc, int16_t range, double adcMax = 32767.0) {
@@ -47,14 +50,14 @@ int main() {
 
 	// 初期表示
 	std::cout << "Voltage range: (+/-)       [mV]\n";
-	std::cout << "Max voltage  :             [mV]            [us] \n";
-	std::cout << "Min voltage  :             [mV]            [us] \n";
+	std::cout << "Max voltage  :             [mV]             [us] \n";
+	std::cout << "Min voltage  :             [mV]             [us] \n";
 	std::cout << "Samples      :              \n";
 	std::cout << "Sample rate  :             [MS/s]\n";
 	std::cout << "Time interval:             [us]\n";
 	std::cout << "Start   time :             [us]\n";
-	std::cout << "End     time :             [us]            [Hz]\n";
-	std::cout << "Elapsed time :             [us]            [Hz]\n";
+	std::cout << "End     time :             [us]             [Hz]\n";
+	std::cout << "Elapsed time :             [us]             [Hz]\n";
 	std::cout << std::flush;
 	int x1 = 15;
 	int x2 = 32;
@@ -106,20 +109,20 @@ int main() {
 		int j = 0;
 		setCursorPosition(x1 + 6, 0); std::cout << getRange(range);
 		j = maxIndex;
-		setCursorPosition(x2, 1); std::cout << times[j] / 1000.0;
-		setCursorPosition(x1, 1); std::cout << adc2mV(bufferA[j], range);
+		setCursorPosition(x2, 1); std::cout << space_pad(11) << times[j] / 1000.0;
+		setCursorPosition(x1, 1); std::cout << space_pad(11) << adc2mV(bufferA[j], range);
 		j = minIndex;
-		setCursorPosition(x2, 2); std::cout << times[j] / 1000.0;
-		setCursorPosition(x1, 2); std::cout << adc2mV(bufferA[j], range);
-		setCursorPosition(x1, 3); std::cout << sampleCount;
-		setCursorPosition(x1, 4); std::cout << 1e9 / timeInterval / 1e6;
-		setCursorPosition(x1, 5); std::cout << timeInterval / 1000.0;
+		setCursorPosition(x2, 2); std::cout << space_pad(11) << times[j] / 1000.0;
+		setCursorPosition(x1, 2); std::cout << space_pad(11) << adc2mV(bufferA[j], range);
+		setCursorPosition(x1, 3); std::cout << space_pad(11) << sampleCount;
+		setCursorPosition(x1, 4); std::cout << space_pad(11) << 1e9 / timeInterval / 1e6;
+		setCursorPosition(x1, 5); std::cout << space_pad(11) << timeInterval / 1000.0;
 		double timeRange = (times[sampleCount - 1] - times[0]); // ns
-		setCursorPosition(x1, 6); std::cout << times[0] / 1000.0;
-		setCursorPosition(x1, 7); std::cout << times[sampleCount - 1] / 1000.0;
-		setCursorPosition(x2, 7); std::cout << 1e9 / timeRange;
-		setCursorPosition(x1, 8); std::cout << duration.count();
-		setCursorPosition(x2, 8); std::cout << 1e6 / duration.count();
+		setCursorPosition(x1, 6); std::cout << space_pad(11) << times[0] / 1000.0;
+		setCursorPosition(x1, 7); std::cout << space_pad(11) << times[sampleCount - 1] / 1000.0;
+		setCursorPosition(x2, 7); std::cout << space_pad(11) << 1e9 / timeRange;
+		setCursorPosition(x1, 8); std::cout << space_pad(11) << duration.count();
+		setCursorPosition(x2, 8); std::cout << space_pad(11) << 1e6 / duration.count();
 		setCursorPosition(0, 9);
 		std::cout << std::flush;
 	}
