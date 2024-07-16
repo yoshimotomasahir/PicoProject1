@@ -1,7 +1,10 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <iomanip>
 #include "ps2000.h"
+
+#define space_pad(num) std::setfill(' ') << std::right << std::setw(num)
 
 const double channelInputRanges[] = { 10., 20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 20000., 50000., 100000., 200000. };
 double adc2mV(int16_t adc, int16_t range, double adcMax = 32767.0) {
@@ -67,14 +70,14 @@ int main() {
 
 	// ‰Šú•\Ž¦
 	std::cout << "Voltage range: (+/-)       [mV]\n";
-	std::cout << "Max voltageAB:             [mV]            [mV] \n";
-	std::cout << "Min voltageAB:             [mV]            [mV] \n";
+	std::cout << "Max voltageAB:             [mV]             [mV] \n";
+	std::cout << "Min voltageAB:             [mV]             [mV] \n";
 	std::cout << "Samples      :              \n";
 	std::cout << "Sample rate  :             [MS/s]\n";
 	std::cout << "Time interval:             [us]\n";
 	std::cout << "Start   time :             [us]\n";
-	std::cout << "End     time :             [us]            [Hz]\n";
-	std::cout << "Elapsed time :             [us]            [Hz]\n";
+	std::cout << "End     time :             [us]             [Hz]\n";
+	std::cout << "Elapsed time :             [us]             [Hz]\n";
 	std::cout << std::flush;
 	int x1 = 15;
 	int x2 = 32;
@@ -95,12 +98,12 @@ int main() {
 		no_of_values = ps2000_get_values(handle, bufferA, bufferB, NULL, NULL, &overflow, BUFFER_SIZE);
 
 		if (no_of_values > 0) {
-			setCursorPosition(x1, 3);  std::cout << no_of_values;
+			setCursorPosition(x1, 3);  std::cout << space_pad(11) << no_of_values;
 			setCursorPosition(0, 9);
 			auto end = std::chrono::high_resolution_clock::now();
 			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-			setCursorPosition(x1, 6); std::cout << std::chrono::duration_cast<std::chrono::microseconds>(start - start0).count();
-			setCursorPosition(x1, 7); std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start0).count();
+			setCursorPosition(x1, 6); std::cout << space_pad(11) << std::chrono::duration_cast<std::chrono::microseconds>(start - start0).count();
+			setCursorPosition(x1, 7); std::cout << space_pad(11) << std::chrono::duration_cast<std::chrono::microseconds>(end - start0).count();
 			start = std::chrono::high_resolution_clock::now();
 
 			int16_t minValueA, maxValueA, minValueB, maxValueB;
@@ -108,16 +111,17 @@ int main() {
 			getMaxMin(no_of_values, bufferA, minValueA, minIndexA, maxValueA, maxIndexA);
 			getMaxMin(no_of_values, bufferB, minValueB, minIndexB, maxValueB, maxIndexB);
 			setCursorPosition(x1 + 6, 0); std::cout << getRange(range);
-			setCursorPosition(x1, 1); std::cout << adc2mV(maxValueA, range);
-			setCursorPosition(x2, 1); std::cout << adc2mV(maxValueB, range);
-			setCursorPosition(x1, 2); std::cout << adc2mV(minValueA, range);
-			setCursorPosition(x2, 2); std::cout << adc2mV(minValueB, range);
 
-			setCursorPosition(x1, 4); std::cout << sample_interval_ms * 1000.0 * 2 / 1e6;
-			setCursorPosition(x1, 5); std::cout << sample_interval_ms * 1000.0;
+			setCursorPosition(x1, 1); std::cout << space_pad(11) << adc2mV(maxValueA, range);
+			setCursorPosition(x2, 1); std::cout << space_pad(11) << adc2mV(maxValueB, range);
+			setCursorPosition(x1, 2); std::cout << space_pad(11) << adc2mV(minValueA, range);
+			setCursorPosition(x2, 2); std::cout << space_pad(11) << adc2mV(minValueB, range);
 
-			setCursorPosition(x1, 8); std::cout << duration.count();
-			setCursorPosition(x2, 8); std::cout << 1e6 / duration.count() * no_of_values;
+			setCursorPosition(x1, 4); std::cout << space_pad(11) << sample_interval_ms * 1000.0 * 2 / 1e6;
+			setCursorPosition(x1, 5); std::cout << space_pad(11) << sample_interval_ms * 1000.0;
+
+			setCursorPosition(x1, 8); std::cout << space_pad(11) << duration.count();
+			setCursorPosition(x2, 8); std::cout << space_pad(11) << 1e6 / duration.count() * no_of_values;
 			setCursorPosition(0, 9);
 			std::cout << std::flush;
 		}
