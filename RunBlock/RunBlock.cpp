@@ -1,4 +1,4 @@
-#include <iostream>
+ï»¿#include <iostream>
 #include <thread>
 #include <chrono>
 #include "ps2000.h"
@@ -17,7 +17,7 @@ double getRange(int16_t range) {
 }
 
 #include <windows.h>
-// ƒJ[ƒ\ƒ‹‚ğˆÚ“®
+// ã‚«ãƒ¼ã‚½ãƒ«ã‚’ç§»å‹•
 void setCursorPosition(int x, int y) {
 	COORD coord;
 	coord.X = x;
@@ -26,26 +26,26 @@ void setCursorPosition(int x, int y) {
 }
 int main() {
 
-	// ƒfƒoƒCƒX‚ğƒI[ƒvƒ“
+	// ãƒ‡ãƒã‚¤ã‚¹ã‚’ã‚ªãƒ¼ãƒ—ãƒ³
 	int16_t handle = ps2000_open_unit();
 	if (handle <= 0) {
-		std::cerr << "ƒfƒoƒCƒX‚ÌƒI[ƒvƒ“‚É¸”s‚µ‚Ü‚µ‚½B" << std::endl;
+		std::cerr << "ãƒ‡ãƒã‚¤ã‚¹ã®ã‚ªãƒ¼ãƒ—ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸã€‚" << std::endl;
 		return 1;
 	}
 
-	// ƒTƒ“ƒvƒ‹”‚Æ“dˆ³ƒŒƒ“ƒW‚ÆƒTƒ“ƒvƒŠƒ“ƒOŠÔŠu‚ğİ’è
-	const int32_t sampleCount = 1250; // æ“¾‚·‚éƒTƒ“ƒvƒ‹”
-	int16_t oversample = 1;     // ƒI[ƒo[ƒTƒ“ƒvƒ‹ (??)
-	int16_t range = PS2000_100MV; // “dˆ³ƒŒƒ“ƒWİ’è
-	int16_t timeUnits = PS2000_NS; // ŠÔ’PˆÊ (ns)
+	// ã‚µãƒ³ãƒ—ãƒ«æ•°ã¨é›»åœ§ãƒ¬ãƒ³ã‚¸ã¨ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°é–“éš”ã‚’è¨­å®š
+	const int32_t sampleCount = 1250; // å–å¾—ã™ã‚‹ã‚µãƒ³ãƒ—ãƒ«æ•°
+	int16_t oversample = 1;     // ã‚ªãƒ¼ãƒãƒ¼ã‚µãƒ³ãƒ—ãƒ« (??)
+	int16_t range = PS2000_100MV; // é›»åœ§ãƒ¬ãƒ³ã‚¸è¨­å®š
+	int16_t timeUnits = PS2000_NS; // æ™‚é–“å˜ä½ (ns)
 	int16_t timeBase = 3;
 	double timeInterval = std::pow(2, timeBase) * 10; // ns
 
-	// ƒ`ƒƒƒ“ƒlƒ‹İ’è
+	// ãƒãƒ£ãƒ³ãƒãƒ«è¨­å®š
 	ps2000_set_channel(handle, PS2000_CHANNEL_A, 1, PS2000_DC_VOLTAGE, range);
 	ps2000_set_channel(handle, PS2000_CHANNEL_B, 0, PS2000_DC_VOLTAGE, range);
 
-	// ‰Šú•\¦
+	// åˆæœŸè¡¨ç¤º
 	std::cout << "Voltage range: (+/-)       [mV]\n";
 	std::cout << "Max voltage  :             [mV]            [us] \n";
 	std::cout << "Min voltage  :             [mV]            [us] \n";
@@ -59,32 +59,32 @@ int main() {
 	int x1 = 15;
 	int x2 = 32;
 
-	// ƒgƒŠƒK[
-	// delay: ”gŒ`æ“¾ŠJnˆÊ’u [%]
-	// auto_trigger_ms: ©“®ƒgƒŠƒK[ [ms]
+	// ãƒˆãƒªã‚¬ãƒ¼
+	// delay: æ³¢å½¢å–å¾—é–‹å§‹ä½ç½® [%]
+	// auto_trigger_ms: è‡ªå‹•ãƒˆãƒªã‚¬ãƒ¼ [ms]
 	ps2000_set_trigger(handle, PS2000_CHANNEL_A, mV2adc(-20, range), PS2000_FALLING, -20, 1000);
 
-	// ƒf[ƒ^æ“¾‚Ìƒ‹[ƒv
+	// ãƒ‡ãƒ¼ã‚¿å–å¾—ã®ãƒ«ãƒ¼ãƒ—
 	while (true) {
 		auto start = std::chrono::high_resolution_clock::now();
 
-		// ƒf[ƒ^æ“¾ŠJn
+		// ãƒ‡ãƒ¼ã‚¿å–å¾—é–‹å§‹
 		ps2000_run_block(handle, sampleCount, timeBase, oversample, NULL);
 
-		// ƒf[ƒ^æ“¾‚ÌŠ®—¹‚ğ‘Ò‚Â
+		// ãƒ‡ãƒ¼ã‚¿å–å¾—ã®å®Œäº†ã‚’å¾…ã¤
 		while (ps2000_ready(handle) == 0) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 1ms ‘Ò‚Â
+			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 1ms å¾…ã¤
 		}
 
-		// ƒf[ƒ^ƒoƒbƒtƒ@‚ğ€”õ
+		// ãƒ‡ãƒ¼ã‚¿ãƒãƒƒãƒ•ã‚¡ã‚’æº–å‚™
 		int32_t times[sampleCount];
 		int16_t bufferA[sampleCount];
 
-		// ƒf[ƒ^‚ğæ“¾
+		// ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—
 		ps2000_get_times_and_values(handle, times, bufferA, NULL, NULL, NULL, NULL, timeUnits, sampleCount);
 
 
-		// Å¬’lEÅ‘å’l‚ğæ“¾
+		// æœ€å°å€¤ãƒ»æœ€å¤§å€¤ã‚’å–å¾—
 		int16_t minValue = bufferA[0];
 		int16_t maxValue = bufferA[0];
 		int32_t minIndex = 0;
@@ -102,7 +102,7 @@ int main() {
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-		// •\¦‚ğXV
+		// è¡¨ç¤ºã‚’æ›´æ–°
 		int j = 0;
 		setCursorPosition(x1 + 6, 0); std::cout << getRange(range);
 		j = maxIndex;
@@ -124,7 +124,7 @@ int main() {
 		std::cout << std::flush;
 	}
 
-	// ƒfƒoƒCƒX‚ğƒNƒ[ƒY
+	// ãƒ‡ãƒã‚¤ã‚¹ã‚’ã‚¯ãƒ­ãƒ¼ã‚º
 	ps2000_close_unit(handle);
 
 	return 0;

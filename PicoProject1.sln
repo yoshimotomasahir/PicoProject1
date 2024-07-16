@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PicoProject1", "PicoProject1\PicoProject1.vcxproj", "{05A2606E-D165-4C7F-8026-6784041DE190}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RunBlock", "RunBlock\RunBlock.vcxproj", "{05A2606E-D165-4C7F-8026-6784041DE190}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RunStreaming", "RunStreaming\RunStreaming.vcxproj", "{F2F9E396-1D3D-41EE-A222-A469C3402440}"
 EndProject
