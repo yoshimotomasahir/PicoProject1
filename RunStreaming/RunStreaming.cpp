@@ -74,7 +74,7 @@ int main() {
 	std::cout << "Min voltageAB:             [mV]             [mV] \n";
 	std::cout << "Samples      :              \n";
 	std::cout << "Sample rate  :             [MS/s]\n";
-	std::cout << "Time interval:             [us]\n";
+	std::cout << "Time interval:             [us]             [Hz]\n";
 	std::cout << "Start   time :             [us]\n";
 	std::cout << "End     time :             [us]             [Hz]\n";
 	std::cout << "Elapsed time :             [us]             [Hz]\n";
@@ -87,6 +87,9 @@ int main() {
 
 	int16_t  sample_interval_ms = 1;
 	ps2000_run_streaming(handle, sample_interval_ms, sampleCount, 0);
+	setCursorPosition(x1, 4); std::cout << space_pad(11) << sample_interval_ms * 1000.0 * 2 / 1e6;
+	setCursorPosition(x1, 5); std::cout << space_pad(11) << sample_interval_ms * 1000.0;
+	setCursorPosition(x2, 5); std::cout << space_pad(11) << 1.e6 / (sample_interval_ms * 1000.0);
 
 	int16_t bufferA[sampleCount];
 	int16_t bufferB[sampleCount];
@@ -94,16 +97,23 @@ int main() {
 	int32_t no_of_values;
 	auto start0 = std::chrono::high_resolution_clock::now();
 	auto start = std::chrono::high_resolution_clock::now();
+
+	uint32_t totalSamples = 0;
+
 	while (true) {
 		no_of_values = ps2000_get_values(handle, bufferA, bufferB, NULL, NULL, &overflow, BUFFER_SIZE);
 
 		if (no_of_values > 0) {
+			totalSamples += no_of_values;
+
 			setCursorPosition(x1, 3);  std::cout << space_pad(11) << no_of_values;
 			setCursorPosition(0, 9);
 			auto end = std::chrono::high_resolution_clock::now();
 			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-			setCursorPosition(x1, 6); std::cout << space_pad(11) << std::chrono::duration_cast<std::chrono::microseconds>(start - start0).count();
-			setCursorPosition(x1, 7); std::cout << space_pad(11) << std::chrono::duration_cast<std::chrono::microseconds>(end - start0).count();
+			auto duration0 = std::chrono::duration_cast<std::chrono::microseconds>(end - start0);
+			setCursorPosition(x1, 6); std::cout << space_pad(11) << 0;
+			setCursorPosition(x1, 7); std::cout << space_pad(11) << duration.count();
+			setCursorPosition(x2, 7); std::cout << space_pad(11) << 1e6 / duration.count() * no_of_values;
 			start = std::chrono::high_resolution_clock::now();
 
 			int16_t minValueA, maxValueA, minValueB, maxValueB;
@@ -117,11 +127,8 @@ int main() {
 			setCursorPosition(x1, 2); std::cout << space_pad(11) << adc2mV(minValueA, range);
 			setCursorPosition(x2, 2); std::cout << space_pad(11) << adc2mV(minValueB, range);
 
-			setCursorPosition(x1, 4); std::cout << space_pad(11) << sample_interval_ms * 1000.0 * 2 / 1e6;
-			setCursorPosition(x1, 5); std::cout << space_pad(11) << sample_interval_ms * 1000.0;
-
-			setCursorPosition(x1, 8); std::cout << space_pad(11) << duration.count();
-			setCursorPosition(x2, 8); std::cout << space_pad(11) << 1e6 / duration.count() * no_of_values;
+			setCursorPosition(x1, 8); std::cout << space_pad(11) << duration0.count();
+			setCursorPosition(x2, 8); std::cout << space_pad(11) << 1e6 / duration0.count() * totalSamples;
 			setCursorPosition(0, 9);
 			std::cout << std::flush;
 		}
