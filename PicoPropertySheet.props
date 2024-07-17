@@ -3,11 +3,11 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>C:\Program Files\Pico Technology\SDK\inc;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files\Pico Technology\SDK\inc;$(SolutionDir)PicoStaticLib;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>C:\Program Files\Pico Technology\SDK\lib\*.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Program Files\Pico Technology\SDK\lib\*.lib;$(OutDir)PicoStaticLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

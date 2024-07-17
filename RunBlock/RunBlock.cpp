@@ -1,32 +1,9 @@
 ﻿#include <iostream>
 #include <thread>
 #include <chrono>
-#include <iomanip>
 #include "ps2000.h"
+#include <PicoStaticLib.hpp>
 
-#define space_pad(num) std::setfill(' ') << std::right << std::setw(num)
-
-const double channelInputRanges[] = { 10., 20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 20000., 50000., 100000., 200000. };
-double adc2mV(int16_t adc, int16_t range, double adcMax = 32767.0) {
-	return double(adc) * channelInputRanges[range] / adcMax;
-}
-
-int16_t mV2adc(double mV, int16_t range, double adcMax = 32767.0) {
-	return std::round(mV * adcMax / channelInputRanges[range]);
-}
-
-double getRange(int16_t range) {
-	return channelInputRanges[range];
-}
-
-#include <windows.h>
-// カーソルを移動
-void setCursorPosition(int x, int y) {
-	COORD coord;
-	coord.X = x;
-	coord.Y = y;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
-}
 int main() {
 
 	// デバイスをオープン
