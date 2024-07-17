@@ -70,33 +70,19 @@ int main() {
 		// データを取得
 		ps2000_get_times_and_values(handle, times, bufferA, NULL, NULL, NULL, NULL, timeUnits, sampleCount);
 
-
 		// 最小値・最大値を取得
-		int16_t minValue = bufferA[0];
-		int16_t maxValue = bufferA[0];
-		int32_t minIndex = 0;
-		int32_t maxIndex = 0;
-		for (int i = 1; i < sampleCount; ++i) {
-			if (bufferA[i] < minValue) {
-				minValue = bufferA[i];
-				minIndex = i;
-			}
-			if (bufferA[i] > maxValue) {
-				maxValue = bufferA[i];
-				maxIndex = i;
-			}
-		}
+		int16_t minValueA, maxValueA;
+		int32_t minIndexA, maxIndexA;
+		getMaxMin(sampleCount, bufferA, minValueA, minIndexA, maxValueA, maxIndexA);
+		
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 		// 表示を更新
-		int j = 0;
-		j = maxIndex;
-		setCursorPosition(x2, 1); std::cout << space_pad(11) << times[j] / 1000.0;
-		setCursorPosition(x1, 1); std::cout << space_pad(11) << adc2mV(bufferA[j], range);
-		j = minIndex;
-		setCursorPosition(x2, 2); std::cout << space_pad(11) << times[j] / 1000.0;
-		setCursorPosition(x1, 2); std::cout << space_pad(11) << adc2mV(bufferA[j], range);
+		setCursorPosition(x2, 1); std::cout << space_pad(11) << times[maxIndexA] / 1000.0;
+		setCursorPosition(x1, 1); std::cout << space_pad(11) << adc2mV(bufferA[maxIndexA], range);
+		setCursorPosition(x2, 2); std::cout << space_pad(11) << times[minIndexA] / 1000.0;
+		setCursorPosition(x1, 2); std::cout << space_pad(11) << adc2mV(bufferA[minIndexA], range);
 		double timeRange = (times[sampleCount - 1] - times[0]); // ns
 		setCursorPosition(x1, 6); std::cout << space_pad(11) << times[0] / 1000.0;
 		setCursorPosition(x1, 7); std::cout << space_pad(11) << times[sampleCount - 1] / 1000.0;

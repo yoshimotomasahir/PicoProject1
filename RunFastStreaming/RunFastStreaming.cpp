@@ -7,7 +7,8 @@
 #include <PicoStaticLib.hpp>
 
 
-uint64_t totalSamples;
+uint64_t totalSamples = 0;
+uint64_t subSamples = 0;
 
 const uint32_t bufferLength = 1000 * 100;
 int16_t bufferA[bufferLength] = { 0 };
@@ -21,7 +22,7 @@ void  PREF4 ps2000FastStreamingReady(int16_t** overviewBuffers,
 	uint32_t nValues)
 {
 
-	assert(bufferLength <= nValues);
+	assert(overflow == 0);
 
 	uint64_t a = totalSamples % bufferLength;
 	uint64_t b = (totalSamples + nValues) % bufferLength;
@@ -38,9 +39,9 @@ void  PREF4 ps2000FastStreamingReady(int16_t** overviewBuffers,
 		memcpy_s((void*)(bufferB + 0), b * sizeof(int16_t), (void*)(overviewBuffers[2] + (bufferLength - a)), b * sizeof(int16_t));
 	}
 	totalSamples += nValues;
+	subSamples = nValues;
 }
 
-#define BUFFER_SIZE 	1024
 int main() {
 
 	// デバイスをオープン
@@ -52,15 +53,18 @@ int main() {
 
 	// サンプル数と電圧レンジとサンプリング間隔を設定
 	const int32_t sampleCount = 10000; // 取得するサンプル数
-	int16_t oversample = 1;     // オーバーサンプル (??)
 	int16_t range = PS2000_100MV; // 電圧レンジ設定
-	int16_t timeUnits = PS2000_NS; // 時間単位 (ns)
-	int16_t timeBase = 3;
-	double timeInterval = std::pow(2, timeBase) * 10; // ns
 
 	// チャンネル設定
 	ps2000_set_channel(handle, PS2000_CHANNEL_A, 1, PS2000_DC_VOLTAGE, range);
 	ps2000_set_channel(handle, PS2000_CHANNEL_B, 1, PS2000_DC_VOLTAGE, range);
+
+	// トリガー(なし)
+	ps2000_set_trigger(handle, PS2000_NONE, 0, 0, 0, 0);
+
+	// サンプル間隔を指定
+	int16_t  sample_interval_us = 10;
+	ps2000_run_streaming_ns(handle, sample_interval_us, PS2000_US, sampleCount, 0, 1, bufferLength);
 
 	// 初期表示
 	std::cout << "Voltage range: (+/-)       [mV]\n";
@@ -75,17 +79,10 @@ int main() {
 	std::cout << std::flush;
 	int x1 = 15;
 	int x2 = 32;
-
-	// トリガー(なし)
-	ps2000_set_trigger(handle, PS2000_NONE, 0, 0, 0, 0);
-
-	int16_t  sample_interval_us = 10;
+	setCursorPosition(x1 + 6, 0); std::cout << getRange(range);
 	setCursorPosition(x1, 5); std::cout << space_pad(11) << sample_interval_us;
 	setCursorPosition(x2, 5); std::cout << space_pad(11) << 1.e6 / sample_interval_us;
 
-	ps2000_run_streaming_ns(handle, sample_interval_us, PS2000_US, sampleCount, 0, 1, 50000);
-
-	int j = 0;
 	auto start0 = std::chrono::high_resolution_clock::now();
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -95,25 +92,29 @@ int main() {
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration0 = std::chrono::duration_cast<std::chrono::microseconds>(end - start0);
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-		setCursorPosition(x1, 8); std::cout << space_pad(11) << duration0.count();
-		setCursorPosition(x2, 8); std::cout << space_pad(11) << 1e6 / duration0.count() * totalSamples;
-		setCursorPosition(x1, 6); std::cout << space_pad(11) << 0;
-		setCursorPosition(x1, 7); std::cout << space_pad(11) << duration.count();
 		start = std::chrono::high_resolution_clock::now();
-
-		setCursorPosition(x1, 3);  std::cout << space_pad(11) << totalSamples;
-		setCursorPosition(x1, 4);  std::cout << space_pad(11) << 1.e6 / duration0.count() * totalSamples * 2 / 1e6;
 
 		int16_t minValueA, maxValueA, minValueB, maxValueB;
 		int32_t minIndexA, maxIndexA, minIndexB, maxIndexB;
 		getMaxMin(bufferLength, bufferA, minValueA, minIndexA, maxValueA, maxIndexA);
 		getMaxMin(bufferLength, bufferB, minValueB, minIndexB, maxValueB, maxIndexB);
-		setCursorPosition(x1 + 6, 0); std::cout << getRange(range);
 
 		setCursorPosition(x1, 1); std::cout << space_pad(11) << adc2mV(maxValueA, range);
 		setCursorPosition(x2, 1); std::cout << space_pad(11) << adc2mV(maxValueB, range);
 		setCursorPosition(x1, 2); std::cout << space_pad(11) << adc2mV(minValueA, range);
 		setCursorPosition(x2, 2); std::cout << space_pad(11) << adc2mV(minValueB, range);
+
+		setCursorPosition(x1, 3);  std::cout << space_pad(11) << totalSamples;
+		setCursorPosition(x2, 3);  std::cout << space_pad(11) << subSamples;
+		setCursorPosition(x1, 4);  std::cout << space_pad(11) << 1.e6 / duration0.count() * totalSamples * 2 / 1e6;
+
+		setCursorPosition(x1, 6); std::cout << space_pad(11) << 0;
+		setCursorPosition(x1, 7); std::cout << space_pad(11) << duration.count();
+		setCursorPosition(x1, 8); std::cout << space_pad(11) << duration0.count();
+		setCursorPosition(x2, 8); std::cout << space_pad(11) << 1e6 / duration0.count() * totalSamples;
+
+		setCursorPosition(0, 9); //カーソルの位置を末尾に
+		std::cout << std::flush;
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 10ms 待つ
 	}
