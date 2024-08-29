@@ -10,9 +10,9 @@
 uint64_t totalSamples = 0;
 uint64_t subSamples = 0;
 
-const uint32_t bufferLength = 1000 * 100;
-int16_t bufferA[bufferLength] = { 0 };
-int16_t bufferB[bufferLength] = { 0 };
+const uint32_t bufferLength = 800 * 1000 * 1000;
+std::unique_ptr<int16_t[]> bufferA;
+std::unique_ptr<int16_t[]> bufferB;
 
 void  PREF4 ps2000FastStreamingReady(int16_t** overviewBuffers,
 	int16_t overflow,
@@ -28,21 +28,25 @@ void  PREF4 ps2000FastStreamingReady(int16_t** overviewBuffers,
 	uint64_t b = (totalSamples + nValues) % bufferLength;
 
 	if (b > a) {
-		memcpy_s((void*)(bufferA + a), nValues * sizeof(int16_t), (void*)(overviewBuffers[0] + 0), nValues * sizeof(int16_t));
-		memcpy_s((void*)(bufferB + a), nValues * sizeof(int16_t), (void*)(overviewBuffers[2] + 0), nValues * sizeof(int16_t));
+		memcpy_s(bufferA.get() + a, nValues * sizeof(int16_t), (void*)(overviewBuffers[0] + 0), nValues * sizeof(int16_t));
+		memcpy_s(bufferB.get() + a, nValues * sizeof(int16_t), (void*)(overviewBuffers[2] + 0), nValues * sizeof(int16_t));
 	}
 	else {
-		memcpy_s((void*)(bufferA + a), (bufferLength - a) * sizeof(int16_t), (void*)(overviewBuffers[0]), (bufferLength - a) * sizeof(int16_t));
-		memcpy_s((void*)(bufferB + a), (bufferLength - a) * sizeof(int16_t), (void*)(overviewBuffers[2]), (bufferLength - a) * sizeof(int16_t));
+		memcpy_s(bufferA.get() + a, (bufferLength - a) * sizeof(int16_t), (void*)(overviewBuffers[0]), (bufferLength - a) * sizeof(int16_t));
+		memcpy_s(bufferB.get() + a, (bufferLength - a) * sizeof(int16_t), (void*)(overviewBuffers[2]), (bufferLength - a) * sizeof(int16_t));
 
-		memcpy_s((void*)(bufferA + 0), b * sizeof(int16_t), (void*)(overviewBuffers[0] + (bufferLength - a)), b * sizeof(int16_t));
-		memcpy_s((void*)(bufferB + 0), b * sizeof(int16_t), (void*)(overviewBuffers[2] + (bufferLength - a)), b * sizeof(int16_t));
+		memcpy_s(bufferA.get() + 0, b * sizeof(int16_t), (void*)(overviewBuffers[0] + (bufferLength - a)), b * sizeof(int16_t));
+		memcpy_s(bufferB.get() + 0, b * sizeof(int16_t), (void*)(overviewBuffers[2] + (bufferLength - a)), b * sizeof(int16_t));
 	}
 	totalSamples += nValues;
 	subSamples = nValues;
 }
 
 int main() {
+
+	// 動的にメモリを確保
+	bufferA = std::unique_ptr<int16_t[]>(new int16_t[bufferLength]());
+	bufferB = std::unique_ptr<int16_t[]>(new int16_t[bufferLength]());
 
 	// デバイスをオープン
 	int16_t handle = ps2000_open_unit();
@@ -64,7 +68,10 @@ int main() {
 
 	// サンプル間隔を指定
 	int16_t  sample_interval_us = 10;
-	ps2000_run_streaming_ns(handle, sample_interval_us, PS2000_US, sampleCount, 0, 1, bufferLength);
+	uint32_t overviewBufferSize = 1000 * 1000;
+	assert(bufferLength > overviewBufferSize);
+
+	ps2000_run_streaming_ns(handle, sample_interval_us, PS2000_US, sampleCount, 0, 1, overviewBufferSize);
 
 	// 初期表示
 	std::cout << "Voltage range: (+/-)       [mV]\n";
@@ -96,8 +103,8 @@ int main() {
 
 		int16_t minValueA, maxValueA, minValueB, maxValueB;
 		int32_t minIndexA, maxIndexA, minIndexB, maxIndexB;
-		getMaxMin(bufferLength, bufferA, minValueA, minIndexA, maxValueA, maxIndexA);
-		getMaxMin(bufferLength, bufferB, minValueB, minIndexB, maxValueB, maxIndexB);
+		getMaxMin(bufferLength, bufferA.get(), minValueA, minIndexA, maxValueA, maxIndexA);
+		getMaxMin(bufferLength, bufferB.get(), minValueB, minIndexB, maxValueB, maxIndexB);
 
 		setCursorPosition(x1, 1); std::cout << space_pad(11) << adc2mV(maxValueA, range);
 		setCursorPosition(x2, 1); std::cout << space_pad(11) << adc2mV(maxValueB, range);
