@@ -16,7 +16,7 @@ uint64_t subSamples = 0;
 int16_t rangeA;
 int16_t rangeB;
 
-uint32_t bufferLength = 800 * 1000 * 1000;
+uint32_t bufferLength;
 std::unique_ptr<int16_t[]> bufferA;
 std::unique_ptr<int16_t[]> bufferB;
 
@@ -44,7 +44,8 @@ void  PREF4 ps2000FastStreamingReady(int16_t** overviewBuffers,
 	int16_t auto_stop,
 	uint32_t nValues)
 {
-	assert(overflow == 0);
+	assert(overflow == 0); //オーバーフローはないはず
+	assert(bufferLength > nValues); // バッファー > 取得したサンプル数 を要求
 
 	uint64_t a = totalSamples % bufferLength;
 	uint64_t b = (totalSamples + nValues) % bufferLength;
@@ -149,7 +150,7 @@ int main() {
 		ofsConfig << "[General]" << std::endl;
 		ofsConfig << "sample_interval_us = 10" << std::endl;
 		ofsConfig << "output_data = false" << std::endl;
-		ofsConfig << "samples_per_file = 360000000" << std::endl;
+		ofsConfig << "buffers = 360000000" << std::endl;
 		ofsConfig << "[ChannelA]" << std::endl;
 		ofsConfig << "range = 100mV ; 50mV 100mV 200mV 500mV 1V 2V 5V 10V 20V" << std::endl;
 		ofsConfig << "coupling = DC ; DC AC" << std::endl;
@@ -163,7 +164,7 @@ int main() {
 	output_data = reader.GetBoolean("General", "output_data", false);
 
 	// バッファー長(1ファイルに記録するサンプル数)
-	bufferLength = reader.GetInteger("General", "samples_per_file", 360000000);
+	bufferLength = reader.GetInteger("General", "buffers", 360000000);
 
 	// 電圧レンジ設定
 	rangeA = getRange(reader.Get("ChannelA", "range", "100mV"));
@@ -210,7 +211,7 @@ int main() {
 	std::cout << "End     time :             [us]             [Hz]\n";
 	std::cout << "Elapsed time :             [us]             [Hz]\n";
 	std::cout << "Elapsed time :             [min]\n";
-	std::cout << "Files*samples:                *                 \n";
+	std::cout << "Files*buffers:                *                 \n";
 	std::cout << std::flush;
 	int x1 = 15;
 	int x2 = 32;
@@ -223,6 +224,7 @@ int main() {
 
 	if (!output_data) {
 		setCursorPosition(x1, 10); std::cout << "No output data";
+		setCursorPosition(x2, 10); std::cout << space_pad(11) << bufferLength;
 	}
 
 	auto start0 = std::chrono::high_resolution_clock::now();
